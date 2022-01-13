@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alarm clock</title>
+    <style>
+        * {
+            margin: 0%;
+            padding: 0%;
+        }
+
+        .linear-gradient {
+            height: 100vh;
+            width: 100%;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4)0%, rgba(0, 0, 0, 0.4)25%, rgba(0, 23, 149, 0.6)50%, rgba(255, 0, 0, 0.6)75%, rgba(0, 23, 149, 0.6)100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-repeat: no-repeat;
+            background-size: 400% 400%;
+            transition: 2s;
+        }
+
+        .container:hover .linear-gradient {
+            background-position: 100% 100%;
+        }
+
+        #ctime,
+        #tpick {
+            font-family: Impact, sans-serif;
+        }
+
+        .header {
+            text-align: center;
+            font-weight: normal;
+            margin: 5px 0 10px 0;
+        }
+
+        /* (B) CURRENT TIME */
+        #ctime {
+            margin: 20px auto;
+            max-width: 350px;
+            padding: 10px;
+            background: rgba(112, 48, 62, 0.315);
+            text-align: center;
+        }
+
+        #ctime .header {
+            color: #ebbfbf;
+        }
+
+        #ctime .square {
+            display: inline-block;
+            padding: 10px;
+            margin: 5px;
+        }
+
+        #ctime .digits {
+            font-size: 24px;
+            background: rgba(112, 48, 62, 0.315);
+            color: #000;
+            padding: 20px 10px;
+            border-radius: 5px;
+        }
+
+        #ctime .text {
+            margin-top: 10px;
+            color: #ddd;
+        }
+
+        /* (C) TIME PICKER */
+        #tpick {
+            margin: 0 auto;
+            max-width: 350px;
+            padding: 10px;
+            background: rgba(112, 48, 62, 0.315);
+            white-space: nowrap;
+        }
+
+        #tpick-h,
+        #tpick-m,
+        #tpick-s {
+            display: inline-block;
+            width: 32%;
+        }
+
+        #tpick select {
+            box-sizing: padding-box;
+            width: 100%;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        #tset,
+        #treset {
+            box-sizing: padding-box;
+            width: 50%;
+            background: #888;
+            color: #fff;
+            padding: 10px;
+            border: 0;
+            cursor: pointer;
+        }
+
+        #tset:disabled,
+        #treset:disabled {
+            background: rgba(112, 48, 62, 0.315);
+            color: #888;
+        }
+
+        #backd {
+            text-align: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        #aback {
+            background-color: rgba(112, 48, 62, 0.315);
+            height: 10%;
+            width: 10%;
+            border-radius: 20px;
+            font-size: 20px;
+            font-weight: 15px;
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="linear-gradient">
+            <div id="ctime">
+                <h1 class="header">THE CURRENT TIME</h1>
+                <div class="square">
+                    <div class="digits" id="chr">00</div>
+                    <div class="text">HR</div>
+                </div>
+                <div class="square">
+                    <div class="digits" id="cmin">00</div>
+                    <div class="text">MIN</div>
+                </div>
+                <div class="square">
+                    <div class="digits" id="csec">00</div>
+                    <div class="text">SEC</div>
+                </div>
+            </div>
+
+            <!-- (B) SET ALARM -->
+            <div id="tpick">
+                <h1 class="header">
+                    SET ALARM
+                </h1>
+                <div id="tpick-h"></div>
+                <div id="tpick-m"></div>
+                <div id="tpick-s"></div>
+                <div>
+                    <input type="button" value="Set" id="tset" />
+                    <input type="button" value="Reset" id="treset" disabled /> <br>
+                </div>
+            </div>
+            <div id="backd">
+                <a href="index.html" id="aback">Back</a>
+            </div>
+
+            <!-- (C) ALARM SOUND -->
+            <audio id="alarm-sound" loop>
+                <source src="full_of_love_romantic_alarm.mp3" type="audio/mp3">
+            </audio>
+        </div>
+    </div>
+
+    <script>
+        var ac = {
+            // (A) INITIALIZE ALARM CLOCK
+            init: function () {
+                // (A1) GET THE CURRENT TIME - HOUR, MIN, SECONDS
+                ac.chr = document.getElementById("chr");
+                ac.cmin = document.getElementById("cmin");
+                ac.csec = document.getElementById("csec");
+
+                // (A2) CREATE TIME PICKER - HR, MIN, SEC
+                ac.thr = ac.createSel(23);
+                document.getElementById("tpick-h").appendChild(ac.thr);
+                ac.thm = ac.createSel(59);
+                document.getElementById("tpick-m").appendChild(ac.thm);
+                ac.ths = ac.createSel(59);
+                document.getElementById("tpick-s").appendChild(ac.ths);
+
+                // (A3) CREATE TIME PICKER - SET, RESET
+                ac.tset = document.getElementById("tset");
+                ac.tset.addEventListener("click", ac.set);
+                ac.treset = document.getElementById("treset");
+                ac.treset.addEventListener("click", ac.reset);
+
+                // (A4) GET ALARM SOUND
+                ac.sound = document.getElementById("alarm-sound");
+
+                // (A5) START THE CLOCK
+                ac.alarm = null;
+                setInterval(ac.tick, 1000);
+            },
+
+            // (B) SUPPORT FUNCTION - CREATE SELECTOR FOR HR, MIN, SEC
+            createSel: function (max) {
+                var selector = document.createElement("select");
+                for (var i = 0; i <= max; i++) {
+                    var opt = document.createElement("option");
+                    i = ac.padzero(i);
+                    opt.value = i;
+                    opt.innerHTML = i;
+                    selector.appendChild(opt);
+                }
+                return selector
+            },
+
+            // (C) SUPPORT FUNCTION - PREPEND HR, MIN, SEC WITH 0 (IF < 10)
+            padzero: function (num) {
+                if (num < 10) { num = "0" + num; }
+                else { num = num.toString(); }
+                return num;
+            },
+
+            // (D) UPDATE CURRENT TIME
+            tick: function () {
+                // (D1) CURRENT TIME
+                var now = new Date();
+                var hr = ac.padzero(now.getHours());
+                var min = ac.padzero(now.getMinutes());
+                var sec = ac.padzero(now.getSeconds());
+
+                // (D2) UPDATE HTML CLOCK
+                ac.chr.innerHTML = hr;
+                ac.cmin.innerHTML = min;
+                ac.csec.innerHTML = sec;
+
+                // (D3) CHECK AND SOUND ALARM
+                if (ac.alarm != null) {
+                    now = hr + min + sec;
+                    if (now == ac.alarm) {
+                        if (ac.sound.paused) { ac.sound.play(); }
+                    }
+                }
+            },
+
+            // (E) SET ALARM
+            set: function () {
+                ac.alarm = ac.thr.value + ac.thm.value + ac.ths.value;
+                ac.thr.disabled = true;
+                ac.thm.disabled = true;
+                ac.ths.disabled = true;
+                ac.tset.disabled = true;
+                ac.treset.disabled = false;
+            },
+
+            // (F) RESET ALARM
+            reset: function () {
+                if (!ac.sound.paused) { ac.sound.pause(); }
+                ac.alarm = null;
+                ac.thr.disabled = false;
+                ac.thm.disabled = false;
+                ac.ths.disabled = false;
+                ac.tset.disabled = false;
+                ac.treset.disabled = true;
+            }
+        };
+
+        // (G) START CLOCK ON PAGE LOAD
+        window.addEventListener("load", ac.init);
+    </script>
+</body>
+
+</html>
